@@ -2,7 +2,6 @@
   (:use :cl)
   (:export #:auth
            #:invalid-password
-           #:invalid-role
            #:invalid-user
            #:login
            #:logged-in-p
@@ -23,9 +22,6 @@
   ((msg :initarg :msg :reader msg)))
 
 (define-condition invalid-user (error)
-  ((msg :initarg :msg :reader msg)))
-
-(define-condition invalid-role (error)
   ((msg :initarg :msg :reader msg)))
 
 (defun setup (&key user-p user-pass user-roles)
