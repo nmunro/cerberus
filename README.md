@@ -82,7 +82,7 @@ As mentioned in the setup section, the `setup` function takes three key argument
                           :in (controllers:search controllers:+permissions+ :player (controllers:get controllers:+user+ :name user))
                           :collect (slot-value (slot-value role 'models:role) 'models:name))))
 
-#### login (&key user password)
+#### login
 
 Login is the function that will put the username and roles into the browser session, it _may_ raise an `invalid-user`, or `invalid-password` condition if there is no such user, or the password doesn't match the hash.
 
