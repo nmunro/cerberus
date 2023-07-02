@@ -52,7 +52,23 @@ You must also, as previously mentioned, write functions to inform cerberus how t
 
 `user-roles` is a function that retrieves the list of roles a user has, it takes a username (a string) and returns a list.
 
-### example
+## API
+
+### Conditions
+
+#### invalid-password
+    
+    A condition that may be raised during `login` if the password doesn't match the password hash.
+
+#### invalid-user
+
+    A condition that may be raised during `login` if there is no matching user.
+
+### Functions
+
+#### setup 
+
+As mentioned in the setup section, the `setup` function takes three key arguments, as you can see below.
 
     (cerberus:setup
         :user-p #'(lambda (user)
@@ -66,23 +82,64 @@ You must also, as previously mentioned, write functions to inform cerberus how t
                           :in (controllers:search controllers:+permissions+ :player (controllers:get controllers:+user+ :name user))
                           :collect (slot-value (slot-value role 'models:role) 'models:name))))
 
-## API
+#### login (&key user password)
 
-### Conditions
+Login is the function that will put the username and roles into the browser session, it _may_ raise an `invalid-user`, or `invalid-password` condition if there is no such user, or the password doesn't match the hash.
 
- - invalid-password
- - invalid-user
+One way login can be integrated is this:
 
-### Functions
+    (handler-case (cerberus:login :user (cdr (assoc "username" params :test #'equal)) :password (cdr (assoc "password" params :test #'equal)))
+        (cerberus:invalid-user (err)
+          (return-from login (render "login.html" :msg (cerberus:msg err))))
 
- - setup (&key user-p user-pass user-roles)
- - login (&key user password)
- - logged-in-p 
- - user-name
- - roles
- - role-p (role)
- - logout
- - auth (&rest roles)
+        (cerberus:invalid-password (err)
+          (return-from login (render "login.html" :msg (cerberus:msg err)))))
+          
+If no condition is raised then you may safely assume that the username and roles are in the session.
+
+#### logged-in-p 
+
+A function that returns a generalized boolean that returns the username of the currently logged in user or nil.
+
+    (if (cerberus:logged-in-p)
+            (render "profile.html" :msg (format nil "Welcome, ~A!" (cerberus:user-name)))
+            (render "login.html"))
+
+#### user-name
+
+A synonym for `logged-in-p`
+
+    (when (cerberus:user-name)
+        (cerberus:logout)
+        (return-from logout (render "login.html" :msg "You are logged out")))
+
+#### roles
+
+A function that returns a generalized boolean that returns the roles of the currently logged in user or nil.
+
+    (cerberus:roles)
+
+#### role-p 
+
+A function that takes a string and returns a generalized boolean testing if the role exists in the logged in users roles. 
+
+    (cerberus:role-p "admin")
+
+#### logout
+
+Logs the current user out by clearing the username and roles from the session.
+
+    (when (cerberus:user-name)
+        (cerberus:logout)
+        (return-from logout (render "login.html" :msg "You are logged out")))
+
+#### auth
+
+Takes a number of roles as [&rest](http://clhs.lisp.se/Body/03_da.htm#AMrest) and determines if the logged in user has any of the roles.
+
+    (unless (cerberus:auth "admin")
+        (setf (lack.response:response-status ningle:*response*) 403)
+        (return-from admin (render "403.html")))
 
 ## Author
 
