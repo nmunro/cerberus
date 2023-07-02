@@ -59,7 +59,7 @@
 
 (defun logout ()
   (remhash :username ningle:*session*)
-  (remhash :username ningle:*session*))
+  (remhash :roles ningle:*session*))
 
 (defun auth (&rest roles)
   (intersection roles (roles) :test #'equal))
