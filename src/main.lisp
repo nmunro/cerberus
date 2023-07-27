@@ -46,7 +46,8 @@
       (setf (gethash :csrf-token ningle:*session*) (funcall *user-csrf-token* user)))))
 
 (defun logged-in-p ()
-  (gethash :username ningle:*session*))
+  (handler-case (gethash :username ningle:*session*)
+    (type-error () nil)))
 
 (defun user-name ()
   (logged-in-p))
