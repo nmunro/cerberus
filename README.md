@@ -1,4 +1,4 @@
-# Cerberus 0.0.1
+# Cerberus 1.0.0
 
 ## Intro
 

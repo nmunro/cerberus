@@ -1,7 +1,6 @@
 (defpackage cerberus
   (:use :cl)
   (:export #:auth
-           #:csrf-token
            #:invalid-password
            #:invalid-user
            #:login
@@ -16,7 +15,6 @@
 (in-package cerberus)
 
 (defparameter *user-p* nil)
-(defparameter *user-csrf-token* nil)
 (defparameter *user-pass* nil)
 (defparameter *user-roles* nil)
 
@@ -26,11 +24,10 @@
 (define-condition invalid-user (error)
   ((msg :initarg :msg :reader msg)))
 
-(defun setup (&key user-p user-pass user-roles user-csrf-token)
+(defun setup (&key user-p user-pass user-roles)
   (setf *user-p* user-p)
   (setf *user-pass* user-pass)
-  (setf *user-roles* user-roles)
-  (setf *user-csrf-token* user-csrf-token))
+  (setf *user-roles* user-roles))
 
 (defun login (&key user password)
   (cond
@@ -42,8 +39,7 @@
 
     (t
       (setf (gethash :username ningle:*session*) user)
-      (setf (gethash :roles ningle:*session*) (funcall *user-roles* user))
-      (setf (gethash :csrf-token ningle:*session*) (funcall *user-csrf-token* user)))))
+      (setf (gethash :roles ningle:*session*) (funcall *user-roles* user)))))
 
 (defun logged-in-p ()
   (handler-case (gethash :username ningle:*session*)
@@ -64,6 +60,3 @@
 
 (defun auth (&rest roles)
   (intersection roles (roles) :test #'equal))
-
-(defun csrf-token ()
-  (gethash :csrf-token ningle:*session*))
